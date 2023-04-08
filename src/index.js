@@ -1,1 +1,20 @@
+import Task from './task.js';
+import Project from './project.js';
+import Storage from './storage.js';
 import './style.css';
+
+const testTask = new Task('Test Task','This is a test','','','','','');
+const testProj = new Project("Test Project");
+const testStore = new Storage();
+testStore.deleteAllTasks();
+testStore.deleteAllProjects();
+console.log(testTask);
+testProj.addTask(testTask);
+testStore.saveTask(testTask);
+testStore.saveProject(testProj);
+console.log(testProj);
+console.log(testStore);
+testProj.removeTask(testTask);
+//testStore.deleteTask(testTask);
+console.log(testProj);
+console.log(testStore);
