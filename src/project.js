@@ -1,3 +1,4 @@
+import Storage from './storage.js';
 import generateUuid from './uuid.js';
 
 export default class Project {
@@ -16,6 +17,7 @@ export default class Project {
   }
 
   addTask(task) {
+    //Check if the task is already assigned to another project; if so, confirm moving the task to this project
     this._tasks[task.uuid] = task;
   }
 

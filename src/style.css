@@ -1,7 +1,43 @@
 :root {
-
+  --bg: rgb(0,0,0,1);
+  --contrast: rgb(255,255,255,1);
+  color: var(--contrast);
 }
 
 body {
   max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(21,12,34,1) 79%, rgba(59,3,142,1) 100%, rgba(173,51,119,1) 100%);
+}
+
+.header {
+  padding: 1rem;
+  text-align: center;
+  background-color: gradient();
+  border: 1px solid var(--contrast);
+}
+
+.projects {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 1px solid var(--contrast);
+}
+
+.project {
+  width: 100px;
+  padding: 1rem;
+  border-radius: 5px;
+}
+
+.tasks {
+  padding: 1rem;
+  border: 1px solid var(--contrast);
+}
+
+.task {
+  border-bottom: 1px solid var(--contrast);
 }
