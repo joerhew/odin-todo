@@ -17,7 +17,13 @@ export default class Project {
   }
 
   addTask(task) {
-    //Check if the task is already assigned to another project; if so, confirm moving the task to this project
+    let projectUuids = Object.keys(Storage.projectList);
+    
+    if (projectUuids.forEach((uuid) => uuid === task.uuid)) {
+      console.log("This task belongs to another project. Remove from that project first.");
+      return;
+    }
+    
     this._tasks[task.uuid] = task;
   }
 
