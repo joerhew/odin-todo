@@ -28,8 +28,8 @@ console.log(testStore);
 console.log(testStore.taskList);
 console.log(testStore.projectList);
 
-DOM.render(testStore.taskList,'tasks');
-DOM.render(testStore.projectList,'projects'); */
+DOM.render(testStore.taskList,'task');
+DOM.render(testStore.projectList,'project'); */
 
 /* const testTask = new Task('Test Task','This is a test','','','','','');
 const testProj = new Project("Test Project");

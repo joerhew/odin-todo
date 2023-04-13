@@ -50,9 +50,7 @@ body {
   display: none;
 }
 
-.projects {
-  display: flex;
-  flex-wrap: wrap;
+.container {
   padding: 1rem;
   border: 1px solid var(--contrast);
 }
@@ -61,11 +59,6 @@ body {
   width: 100px;
   padding: 1rem;
   border-radius: 5px;
-}
-
-.tasks {
-  padding: 1rem;
-  border: 1px solid var(--contrast);
 }
 
 .task {
