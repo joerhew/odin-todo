@@ -15,14 +15,14 @@ body {
   align-items: center;
 }
 
-.header {
+#header {
   padding: 1rem;
   text-align: center;
   background-color: gradient();
   border: 1px solid var(--contrast);
 }
 
-.modal {
+#modal {
   position: absolute;
   justify-self: center;
   align-self: center;
@@ -33,7 +33,7 @@ body {
   z-index: 2;
 }
 
-.overlay {
+#overlay {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -46,8 +46,10 @@ body {
   z-index: 1;
 }
 
-.form_new_project {
-  display: block;
+.existing-project {
+  border: 1px solid var(--contrast);
+  margin: 1rem;
+  padding: 1rem;
 }
 
 .hidden {
