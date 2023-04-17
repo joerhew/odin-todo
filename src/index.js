@@ -18,7 +18,7 @@ DOM.init();
 const testTask2 = new Task('Test Task 2','This is a test 2','','','','','');
 const testTask3 = new Task('Test Task 2','This is a test 2','','','','','');
 
-const testStore = new Storage();
+
 
 testStore.saveTask(testTask);
 testStore.saveTask(testTask2);
@@ -28,8 +28,8 @@ console.log(testStore);
 console.log(testStore.taskList);
 console.log(testStore.projectList);
 
-DOM.render(testStore.taskList,'task');
-DOM.render(testStore.projectList,'project'); */
+DOM.renderList(testStore.taskList,'task');
+DOM.renderList(testStore.projectList,'project'); */
 
 /* const testTask = new Task('Test Task','This is a test','','','','','');
 const testProj = new Project("Test Project");

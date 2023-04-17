@@ -46,6 +46,10 @@ body {
   z-index: 1;
 }
 
+.form_new_project {
+  display: block;
+}
+
 .hidden {
   display: none;
 }

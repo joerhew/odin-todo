@@ -1,8 +1,10 @@
 //import Task from './task.js';
-//import Project from './project.js';
-//import Storage from './storage.js';
+import Project from './project.js';
+import Storage from './storage.js';
 
 export const DOM = {
+  STORAGE: null,
+
   CONTENT: document.querySelector('#content'),
   HEADER: document.createElement('div'),
   
@@ -18,8 +20,11 @@ export const DOM = {
   OVERLAY: document.createElement('div'),
   FORM_NEW_PROJECT: document.createElement('form'),
   FORM_NEW_TASK: document.createElement('form'),
-
+  
   init() {
+    //Create an instance of local storage
+    this.STORAGE = new Storage();
+
     //Add skeleton structure to page
     this.HEADER.classList.add('header');
     this.CNTR_PROJECTS.classList.add('container');
@@ -33,17 +38,19 @@ export const DOM = {
     this.MODAL.classList.add('modal', 'hidden');
     this.OVERLAY.classList.add('overlay', 'hidden');
     this.FORM_NEW_PROJECT.classList.add('form_new_project', 'hidden');
-    this.FORM_NEW_TASK.classList.add('form_new_task', );
+    this.FORM_NEW_TASK.classList.add('form_new_task', 'hidden');
     
     //Populate header, projects list, and tasks list
     this.HEADER.innerText = 'My Task Tracker!';
-    this.CURRENT_PROJECTS.innerText = 'This is where the projects go';
+    this.CURRENT_PROJECTS.innerText = this.STORAGE.projectList;
+    
+    //Create a function to display existing projects
+    console.log(this.STORAGE.projectList);
+
     this.CURRENT_TASKS.innerText = 'This is where the tasks go';
     this.BTN_NEW_PROJECT.innerText = "Add Project";
   
     this.BTN_NEW_TASK.innerText = "Add Task";
-    this.FORM_NEW_PROJECT.innerText = "Project form goes here";
-    this.FORM_NEW_TASK.innerText = "Task form goes here";
 
     //Append
     this.CONTENT.appendChild(this.HEADER);
@@ -68,13 +75,15 @@ export const DOM = {
         this.toggleModal('project')
       } else if (targetElement.id === 'btn_new_task') {
         this.toggleModal('task')
-      } else if (targetElement.classList.contains('modal')) {
+      } else if (targetElement.classList.contains('btn_cancel')) {
         this.toggleModal();
+      } else if (targetElement.id === 'btn_add_new_project') {
+        //create new project
       }
     })
   },
 
-  render(list, type) {
+  renderList(list, type) {
     for (const item in list) {
       const ITEM = document.createElement('div')
       
@@ -107,6 +116,43 @@ export const DOM = {
       this.FORM_NEW_TASK.classList.remove('hidden');
     } else if (type === 'project') {
       this.FORM_NEW_PROJECT.classList.remove('hidden');
+
+      //Generate a form to add a new project
+      this.FORM_NEW_PROJECT.innerHTML = '';
+      
+      let InputProjectName = document.createElement('input');
+      let LabelProjectName = document.createElement('label');
+      let buttonAdd = document.createElement('button');
+      let buttonCancel = document.createElement('button');
+
+      InputProjectName.type = 'text';
+      InputProjectName.id = 'project_name';
+      InputProjectName.required =  true;
+      LabelProjectName.htmlFor = 'project_name';
+      LabelProjectName.innerText = "Project Name";
+      
+      buttonAdd.id = 'btn_add_new_project';
+      buttonAdd.type = 'submit';
+      buttonCancel.classList.add('btn_cancel');
+      buttonCancel.type = 'button';
+      buttonAdd.innerText = 'Add';
+      buttonCancel.innerText = 'Cancel';
+
+      this.FORM_NEW_PROJECT.appendChild(LabelProjectName);
+      this.FORM_NEW_PROJECT.appendChild(InputProjectName);
+      this.FORM_NEW_PROJECT.appendChild(buttonAdd);
+      this.FORM_NEW_PROJECT.appendChild(buttonCancel);
+
+      this.FORM_NEW_PROJECT.addEventListener('submit', (event) => {
+        const PROJECT_NAME = InputProjectName.value;
+        const NEW_PROJECT = new Project(PROJECT_NAME);
+        
+        event.preventDefault();
+        this.STORAGE.saveProject(NEW_PROJECT);
+        this.toggleModal();
+      })
     }
-  },  
+  },
+  
+  
 }
