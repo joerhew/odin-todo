@@ -22,12 +22,12 @@ export default class Storage {
   }
 
   saveTask(task) {
-    this._taskList[task.uuid] = task;
+    this._taskList[task._uuid] = task;
     this.updateLocalStorage('taskList');
   }
 
   deleteTask(task) {
-    delete this._taskList[task.uuid];
+    delete this._taskList[task._uuid];
     this.updateLocalStorage('taskList');
   }
 
@@ -37,12 +37,12 @@ export default class Storage {
   }
 
   saveProject(project) {
-    this._projectList[project.uuid] = project;
+    this._projectList[project._uuid] = project;
     this.updateLocalStorage('projectList');
   }
 
   deleteProject(project) {
-    delete this._projectList[project.uuid];
+    delete this._projectList[project._uuid];
     this.updateLocalStorage('projectList');
   }
 
