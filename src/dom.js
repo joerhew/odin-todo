@@ -23,6 +23,56 @@ export const DOM = {
   BTN_NEW_PROJECT: document.createElement('button'),
   BTN_NEW_TASK: document.createElement('button'),
   
+  createElement(type, options = {}) {
+    let element;
+
+    if (type === 'Image') {
+      element = new Image();
+    } else {
+      element = document.createElement(type);
+    }
+  
+    if (options.id) {
+      element.id = options.id;
+    }
+  
+    if (options.classes) {
+      element.classList.add(...options.classes);
+    }
+  
+    if (options.name) {
+      element.name = options.name;
+    }
+  
+    if (options.type) {
+      element.type = options.type;
+    }
+  
+    if (options.innerText) {
+      element.innerText = options.innerText;
+    }
+
+    if (options.src) {
+      element.src = options.src;
+    }
+  
+    if (options.attributes) {
+      for (const [key, value] of Object.entries(options.attributes)) {
+        element.setAttribute(key, value);
+      }
+    }
+
+    if (options.appendTo) {
+      options.appendTo.appendChild(element);
+    }
+  
+    if (options.insertBefore && options.insertBefore.parentElement) {
+      options.insertBefore.parentElement.insertBefore(element, options.insertBefore);
+    }
+  
+    return element;
+  },
+
   init() {
     //Create an instance of local storage
     this.STORAGE = new Storage();
@@ -54,19 +104,12 @@ export const DOM = {
         this.toggleModal('task')
       } else if (targetElement.classList.contains('btn-cancel')) {
         this.toggleModal();
-      } else if (targetElement.id === 'btn-add-new-project') {
-        //create new project
       } else if (targetElement.id === 'btn-delete-project') {
         const PROJECT_UUID_TO_DELETE = targetElement.closest('.existing-project').id;
-        console.log(PROJECT_UUID_TO_DELETE);
         const PROJECT_TO_DELETE = this.STORAGE.projectList[PROJECT_UUID_TO_DELETE];
-        console.log(PROJECT_TO_DELETE)
-        console.log(this.STORAGE.projectList);
+
         this.STORAGE.deleteProject(PROJECT_TO_DELETE);
-        console.log(this.STORAGE.projectList);
         this.renderProjects();
-        //Find the project object that matches the UUID of PROJECT_UUID_TO_DELETE
-        //Delete the project
       }
     })
   },
@@ -75,48 +118,33 @@ export const DOM = {
     this.CURRENT_PROJECTS.innerHTML = '';
 
     Object.values(this.STORAGE.projectList).forEach(project => {
-      const existingProjectDiv = document.createElement('div');
-      const existingProjectName = document.createElement('div');
       
-      const deleteIcon = new Image();
-      deleteIcon.src = IconDelete;
-      deleteIcon.id = 'btn-delete-project';
-      deleteIcon.classList.add('icon');
+      const existingProjectDiv = this.createElement('div', {
+        classes: ['existing-project'],
+        id: project._uuid,
+        appendTo: this.CURRENT_PROJECTS,
+      });
+      
+      const existingProjectName = this.createElement('div', {
+        classes: ['existing-project-name'],
+        innerText: project._name,
+        appendTo: existingProjectDiv,
+      });
+      
+      const editIcon = this.createElement('Image', {
+        id: 'btn-edit-project',
+        src: IconEdit,
+        classes: ['icon'],
+        appendTo: existingProjectDiv,
+      });
 
-      const editIcon = new Image();
-      editIcon.src = IconEdit;
-      editIcon.id = 'btn-edit-project';
-      editIcon.classList.add('icon');
-
-      existingProjectDiv.classList.add('existing-project');
-      existingProjectDiv.id = project._uuid;
-      existingProjectName.classList.add('existing-project-name');
-      existingProjectName.innerText = project._name;
-      existingProjectDiv.appendChild(existingProjectName);
-      existingProjectDiv.appendChild(editIcon);
-      existingProjectDiv.appendChild(deleteIcon);
-      this.CURRENT_PROJECTS.appendChild(existingProjectDiv);
+      const deleteIcon = this.createElement('Image', {
+        id: 'btn-delete-project',
+        src: IconDelete,
+        classes: ['icon'],
+        appendTo: existingProjectDiv,
+      });
     })
-  },
-
-  renderList(list, type) {
-    for (const item in list) {
-      const ITEM = document.createElement('div')
-      
-      if (type === 'task') {
-        this.CNTR_TASKS.innerHTML = '';
-        ITEM.classList.add('task');
-        this.CNTR_TASKS.appendChild(ITEM);
-        ITEM.innerText = `${item}: ${list[item].title}`
-      } else if (type === 'project') {
-        this.CNTR_PROJECTS.innerHTML = '';
-        ITEM.classList.add('project');
-        this.CNTR_PROJECTS.appendChild(ITEM);
-        ITEM.innerText = `${item}: ${list[item].name}`
-      } else {
-        alert('This type is not registered.');
-      }
-    }
   },
 
   toggleModal(type) {
@@ -134,30 +162,43 @@ export const DOM = {
       this.FORM_PROJECT.classList.remove('hidden');
 
       //Generate a form to add a new project
-      this.FORM_PROJECT.innerHTML = '';
-      
-      let InputProjectName = document.createElement('input');
-      let LabelProjectName = document.createElement('label');
-      let buttonAdd = document.createElement('button');
-      let buttonCancel = document.createElement('button');
+      this.generateNewProjectForm();
+    }
+  },
 
-      InputProjectName.type = 'text';
-      InputProjectName.id = 'project_name';
-      InputProjectName.required =  true;
-      LabelProjectName.htmlFor = 'project_name';
-      LabelProjectName.innerText = "Project Name";
-      
-      buttonAdd.id = 'btn-add-new-project';
-      buttonAdd.type = 'submit';
-      buttonCancel.classList.add('btn-cancel');
-      buttonCancel.type = 'button';
-      buttonAdd.innerText = 'Add';
-      buttonCancel.innerText = 'Cancel';
+  generateNewProjectForm() {
+    this.FORM_PROJECT.innerHTML = '';
 
-      this.FORM_PROJECT.appendChild(LabelProjectName);
-      this.FORM_PROJECT.appendChild(InputProjectName);
-      this.FORM_PROJECT.appendChild(buttonAdd);
-      this.FORM_PROJECT.appendChild(buttonCancel);
+      let LabelProjectName = this.createElement('label', {
+        innerText: 'Project Name',
+        attributes: {
+          for: 'project-name'
+        },
+        appendTo: this.FORM_PROJECT,
+      });
+
+      let InputProjectName = this.createElement('input', {
+        id: 'project-name',
+        type: 'text',
+        attributes: {
+          required: true,
+        },
+        appendTo: this.FORM_PROJECT,
+      });
+      
+      let buttonAdd = this.createElement('button', {
+        id: 'btn-add-new-project',
+        type: 'submit',
+        innerText: 'Add',
+        appendTo: this.FORM_PROJECT,
+      });
+
+      let buttonCancel = this.createElement('button', {
+        classes: ['btn-cancel'],
+        type: 'button',
+        innerText: 'Cancel',
+        appendTo: this.FORM_PROJECT,
+      });
 
       this.FORM_PROJECT.addEventListener('submit', (event) => {
         const PROJECT_NAME = InputProjectName.value;
@@ -165,10 +206,9 @@ export const DOM = {
         
         event.preventDefault();
         this.STORAGE.saveProject(NEW_PROJECT);
+        this.renderProjects();
         this.toggleModal();
       })
-    }
-  },
-  
+  }
   
 }
