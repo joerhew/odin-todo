@@ -23,7 +23,7 @@ export default class Project {
       console.log("This task belongs to another project. Remove from that project first.");
       return;
     }
-    
+
     this._tasks[task.uuid] = task;
   }
 

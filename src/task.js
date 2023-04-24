@@ -1,14 +1,13 @@
 import generateUuid from './uuid.js';
 
 export default class Task {
-  constructor(title, description, project, dueDate, status, priority, notes) {
+  constructor(title, description, project, dueDate, status, priority) {
     this._title = title;
     this._description = description;
     this._project = project;
     this._dueDate = dueDate;
     this._status = status;
     this._priority = priority;
-    this._notes = notes;
     this._uuid = generateUuid();
   }
 
@@ -58,14 +57,6 @@ export default class Task {
 
   set priority(value) {
     this._priority = value;
-  }
-
-  get notes() {
-    return this._notes;
-  }
-
-  set notes(value) {
-    this._notes = value;
   }
 
   get uuid() {

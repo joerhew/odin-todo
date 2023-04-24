@@ -9,6 +9,18 @@ body {
   background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(21,12,34,1) 79%, rgba(59,3,142,1) 100%, rgba(173,51,119,1) 100%);
 }
 
+form {
+  display: block;
+}
+
+button {
+  width: 10rem;
+  height: 2rem;
+  background-color: white;
+  color: black;
+  border: none;
+}
+
 #content {
   display: flex;
   flex-direction: column;
@@ -69,7 +81,23 @@ body {
   padding: 1rem;
 }
 
+.existing-task {
+  display: flex;
+  border: 1px solid var(--contrast);
+  margin: 1rem;
+  padding: 1rem;
+}
+
 .existing-project-name {
+  width: 100%;
+}
+
+.form-row {
+  width: 100%;
+  margin: 1rem;
+}
+
+.form-row-btns {
   width: 100%;
 }
 
