@@ -37,9 +37,7 @@ export default class Storage {
   }
 
   saveProject(project) {
-    console.log(project._uuid);
     this._projectList[project._uuid] = project;
-    console.log(this._projectList);
     this.updateLocalStorage('projectList');
   }
 

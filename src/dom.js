@@ -20,6 +20,8 @@ export const DOM = {
   //create buttons for adding new projects and tasks
   BTN_NEW_PROJECT: document.createElement('button'),
   BTN_NEW_TASK: document.createElement('button'),
+  TASK_STATUSES: ['To do','In progress','Completed'],
+  TASK_PRIORITIES: ['Low','Medium','High'],
   
   createElement(type, options = {}) {
     let element;
@@ -56,13 +58,10 @@ export const DOM = {
   init() {
     //Create an instance of local storage
     this.STORAGE = new Storage();
-    
     //Populate projects list
     this.renderProjects();
-    
     //Populate tasks list
     this.renderTasks();
-
     //Generate and append buttons
     this.BTN_NEW_PROJECT.innerText = "Add Project";  
     this.BTN_NEW_TASK.innerText = "Add Task";
@@ -83,19 +82,24 @@ export const DOM = {
         this.generateProjectForm();
       } else if (targetElement.id === 'btn-new-task') {
         this.showModal();
-        this.showTaskForm();
+        this.generateTaskForm();
       } else if (targetElement.classList.contains('btn-cancel')) {
         this.hideModal();
       } else if (targetElement.classList.contains('btn-delete-project')) {
         let projectToDelete = this.findItem(targetElement, 'project');
         this.deleteItem(projectToDelete, 'project');
-      } else if (targetElement.id === 'btn-delete-task') {
-        let taskToDelete = this.findItem(targetElement, 'task');
-        this.deleteItem(taskToDelete,'task');
       } else if (targetElement.classList.contains('btn-edit-project')) {
         let projectToEdit = this.findItem(targetElement, 'project');
         this.showModal();
         this.generateProjectForm(projectToEdit);
+      } else if (targetElement.classList.contains('btn-delete-task')) {
+        let taskToDelete = this.findItem(targetElement, 'task');
+        this.deleteItem(taskToDelete,'task');
+      } else if (targetElement.classList.contains('btn-edit-task')) {
+        let taskToEdit = this.findItem(targetElement, 'task');
+        console.log(taskToEdit);
+        this.showModal();
+        this.generateTaskForm(taskToEdit);
       }
     })
   },
@@ -189,25 +193,18 @@ export const DOM = {
       });
       
       const editIcon = this.createElement('Image', {
-        id: 'btn-edit-task',
         src: IconEdit,
-        classes: ['icon'],
+        classes: ['icon','btn-edit-task'],
         appendTo: existingTaskDiv,
       });
 
       const deleteIcon = this.createElement('Image', {
-        id: 'btn-delete-task',
         src: IconDelete,
-        classes: ['icon'],
+        classes: ['icon','btn-delete-task'],
         appendTo: existingTaskDiv,
       });
     })
   },
-
-  showTaskForm() {
-    this.generateTaskForm();
-  },
-
 
   showModal() {
     this.MODAL.classList.remove('hidden');
@@ -280,10 +277,8 @@ export const DOM = {
       
       if (project) {
         project._name = PROJECT_NAME;
-        console.log('yas');
         this.STORAGE.saveProject(project);
-      } else {  
-        console.log('for fuck');
+      } else {
         const NEW_PROJECT = new Project(PROJECT_NAME);
         this.STORAGE.saveProject(NEW_PROJECT);
       }
@@ -293,7 +288,7 @@ export const DOM = {
     })
   },
 
-  generateTaskForm() {
+  generateTaskForm(task) {
     this.MODAL.innerHTML = ''; 
 
     let taskForm = this.createElement('form', {
@@ -323,6 +318,7 @@ export const DOM = {
       attributes: {
         required: true,
       },
+      value: task ? task._name : '',
       appendTo: divTaskName,
     });
 
@@ -339,9 +335,9 @@ export const DOM = {
       appendTo: divTaskDescription,
     });
 
-    let inputTaskDescription = this.createElement('input', {
+    let inputTaskDescription = this.createElement('textarea', {
       id: 'task-description',
-      type: 'text',
+      value: task ? task._description : '',
       appendTo: divTaskDescription,
     });
 
@@ -358,14 +354,22 @@ export const DOM = {
       appendTo: divTaskProject,
     });
 
-    let inputTaskProject = this.createElement('input', {
+    let inputTaskProject = this.createElement('select', {
       id: 'task-project',
-      type: 'text',
+      value: task ? task._project : '',
       attributes: {
         required: true,
       },
       appendTo: divTaskProject,
     });
+
+    Object.values(this.STORAGE.projectList).forEach(project => {
+      this.createElement('option', {
+        value: project._uuid,
+        innerText: project._name,
+        appendTo: inputTaskProject,
+      })
+    })
 
     let divTaskDueDate = this.createElement('div', {
       classes: ['form-row'],
@@ -382,7 +386,8 @@ export const DOM = {
 
     let inputTaskDueDate = this.createElement('input', {
       id: 'task-due-date',
-      type: 'text',
+      type: 'date',
+      value: task ? task._dueDate : '',
       appendTo: divTaskDueDate,
     });
 
@@ -399,11 +404,19 @@ export const DOM = {
       appendTo: divTaskStatus,
     });
 
-    let inputTaskStatus = this.createElement('input', {
+    let inputTaskStatus = this.createElement('select', {
       id: 'task-status',
-      type: 'text',
+      value: task ? task._status : '',
       appendTo: divTaskStatus,
     });
+
+    this.TASK_STATUSES.forEach(status => {
+      this.createElement('option', {
+        value: status,
+        innerText: status,
+        appendTo: inputTaskStatus,
+      })
+    })
 
     let divTaskPriority = this.createElement('div', {
       classes: ['form-row'],
@@ -418,11 +431,19 @@ export const DOM = {
       appendTo: divTaskPriority,
     });
 
-    let inputTaskPriority = this.createElement('input', {
+    let inputTaskPriority = this.createElement('select', {
       id: 'task-priority',
-      type: 'text',
+      value: task ? task._priority : '',
       appendTo: divTaskPriority,
     });
+
+    this.TASK_PRIORITIES.forEach(priority => {
+      this.createElement('option', {
+        value: priority,
+        innerText: priority,
+        appendTo: inputTaskPriority,
+      })
+    })
 
     let divFormBtns = this.createElement('div', {
       classes: ['form-row-btns'],
@@ -444,17 +465,28 @@ export const DOM = {
     });
 
     taskForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
       const TASK_NAME = inputTaskName.value;
       const TASK_DESCRIPTION = inputTaskDescription.value;
       const TASK_PROJECT = inputTaskProject.value;
       const TASK_DUE_DATE = inputTaskDueDate.value;
       const TASK_STATUS = inputTaskStatus.value;
       const TASK_PRIORITY = inputTaskPriority.value;
-
-      const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
       
-      event.preventDefault();
-      this.STORAGE.saveTask(NEW_TASK);
+      if (task) {
+        task._name = TASK_NAME;
+        task._description = TASK_DESCRIPTION;
+        task._project = TASK_PROJECT;
+        task._dueDate = TASK_DUE_DATE;
+        task._status = TASK_STATUS;
+        task._priority = TASK_PRIORITY;
+        this.STORAGE.saveTask(task);
+      } else {
+        const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
+        this.STORAGE.saveTask(NEW_TASK);
+      }
+
       this.renderTasks();
       this.hideModal();
     })
