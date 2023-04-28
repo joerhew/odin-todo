@@ -2,51 +2,50 @@
 //import Project from './project.js';
 
 export default class Storage {
-  constructor() {
-    this._taskList = JSON.parse(localStorage.getItem('taskList') || '{}');
-    this._projectList = JSON.parse(localStorage.getItem('projectList') || '{}');
-  }
+  
+  static _taskList = JSON.parse(localStorage.getItem('taskList') || '{}');
+  static _projectList = JSON.parse(localStorage.getItem('projectList') || '{}');
 
-  get taskList() {
+  static get taskList() {
     return this._taskList;
   }
 
-  get projectList() {
+  static get projectList() {
     return this._projectList;
   }
 
-  updateLocalStorage(storageName) {
+  static updateLocalStorage(storageName) {
     const storageKey = storageName;
     const storageObject = this[storageName];
     localStorage.setItem(storageKey, JSON.stringify(storageObject));
   }
 
-  saveTask(task) {
+  static saveTask(task) {
     this._taskList[task._uuid] = task;
     this.updateLocalStorage('taskList');
   }
 
-  deleteTask(task) {
+  static deleteTask(task) {
     delete this._taskList[task._uuid];
     this.updateLocalStorage('taskList');
   }
 
-  deleteAllTasks() {
+  static deleteAllTasks() {
     this._taskList = {};
     this.updateLocalStorage('taskList');
   }
 
-  saveProject(project) {
+  static saveProject(project) {
     this._projectList[project._uuid] = project;
     this.updateLocalStorage('projectList');
   }
 
-  deleteProject(project) {
+  static deleteProject(project) {
     delete this._projectList[project._uuid];
     this.updateLocalStorage('projectList');
   }
 
-  deleteAllProjects() {
+  static deleteAllProjects() {
     this._projectList = {};
     this.updateLocalStorage('projectList');
   }

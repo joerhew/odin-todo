@@ -16,15 +16,20 @@ export default class Project {
     return this._tasks;
   }
 
-  addTask(task) {
-    let projectUuids = Object.keys(Storage.projectList);
-    
-    if (projectUuids.forEach((uuid) => uuid === task.uuid)) {
-      console.log("This task belongs to another project. Remove from that project first.");
-      return;
-    }
+  addTaskToProject(task, project, storage) {
+    let oldProject = task._project;
+    let newProject = project;
 
-    this._tasks[task.uuid] = task;
+    if (oldProject === newProject) {
+      return;
+    } else if (oldProject !== newProject) {
+      task._project = newProject;
+      console.log(task);
+      Object.assign(project._tasks, task);
+      console.log(project);
+      storage.Storage.updateLocalStorage('taskList');
+      storage.Storage.updateLocalStorage('projectList');
+    }
   }
 
   removeTask(task) {
