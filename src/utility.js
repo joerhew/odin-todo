@@ -18,6 +18,7 @@ export function createElement(type, options = {}) {
   if (options.innerText) { element.innerText = options.innerText }
   if (options.src) { element.src = options.src }
   if (options.appendTo) { options.appendTo.appendChild(element) }
+  if (options.selected) { element.selected = options.selected }
   if (options.insertBefore && options.insertBefore.parentElement) { options.insertBefore.parentElement.insertBefore(element, options.insertBefore); }
 
   if (options.attributes) {

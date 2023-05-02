@@ -1,6 +1,7 @@
-//import Storage from './storage.js'
-import Project from './project.js'
-import Task from './task.js'
+//import Storage from './storage.js';
+import Project from './project.js';
+import Task from './task.js';
+import _ from 'lodash';
 
 export default class List {
   static projects = {};
@@ -26,6 +27,18 @@ export default class List {
 
   static saveTask(task) {
     this.tasks[task.uuid] = task;
+  }
+
+  static addTaskToProject(task, project) {
+    let oldProject = task.project;
+    let newProject = project;
+
+    task.setProject(newProject);
+    newProject.addTask(task);
+    console.log(newProject);
+    oldProject.removeTask(task);
+    console.log(oldProject);
+    
   }
 
   static deleteProject(project) {

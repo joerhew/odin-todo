@@ -10,6 +10,7 @@ import IconEdit from '../assets/pencil-outline.svg';
 export const DOM = {
   TASK_STATUSES: ['','To do','In progress','Completed'],
   TASK_PRIORITIES: ['','Low','Medium','High'],
+  CURRENT_PAGE: null,
   //querySelectors
   CONTENT: document.querySelector('#content'),
   HEADER: document.querySelector('#header'),
@@ -47,7 +48,8 @@ export const DOM = {
       } else if (targetElement.id === 'btn-new-task') {
         this.generateTaskForm();
       } else if (targetElement.classList.contains('btn-cancel')) {
-        this.hideModal();
+        this.hide(this.MODAL);
+        this.hide(this.OVERLAY);
       } else if (targetElement.classList.contains('btn-delete-project')) {
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
         let projectToDelete = findItemWithUuid(projectUuid, 'project');
@@ -77,6 +79,15 @@ export const DOM = {
 
   navigateToProject(project) {
     console.log(project.uuid);
+    createElement('button', {
+      class: 'back-button',
+      appendTo: this.HEADER,
+      innerText: 'Back',
+    })
+    this.renderTasks(project);
+    this.hide(this.CNTR_PROJECTS);
+    this.BTN_NEW_TASK.innerText = `Add Task to ${project.name}`;
+    this.CURRENT_PAGE = project.uuid;
   },
 
   updateHeader(project) {
@@ -104,7 +115,7 @@ export const DOM = {
       
       const existingProjectName = createElement('div', {
         classes: ['existing-project-name'],
-        innerText: project.name,
+        innerText: `${project.name}, has task(s): ${Object.values(project.tasks).map(task => task.name).join(', ')}`,
         appendTo: existingProjectDiv,
       });
       
@@ -122,10 +133,12 @@ export const DOM = {
     })
   },
 
-  renderTasks() {
+  renderTasks(project) {
     this.CURRENT_TASKS.innerHTML = '';
 
-    Object.values(List.tasks).forEach(task => {
+    let tasksToBeRendered = project ? project.tasks : List.tasks;
+    
+    Object.values(tasksToBeRendered).forEach(task => {
       
       const existingTaskDiv = createElement('div', {
         classes: ['existing-task'],
@@ -147,7 +160,7 @@ export const DOM = {
 
       const existingTaskProject = createElement('div', {
         classes: ['existing-task-project'],
-        innerText: task.project,
+        innerText: task.project.name,
         appendTo: existingTaskDiv,
       });
 
@@ -183,18 +196,17 @@ export const DOM = {
     })
   },
 
-  showModal() {
-    this.MODAL.classList.remove('hidden');
-    this.OVERLAY.classList.remove('hidden');
+  hide(element) {
+    element.classList.add('hidden');
   },
 
-  hideModal() {
-    this.MODAL.classList.add('hidden');
-    this.OVERLAY.classList.add('hidden');
+  unhide(element) {
+    element.classList.remove('hidden');
   },
 
   generateProjectForm(project) {
-    this.showModal();
+    this.unhide(this.MODAL);
+    this.unhide(this.OVERLAY);
     this.MODAL.innerHTML = ''
     
     let projectForm = createElement('form', {
@@ -261,12 +273,14 @@ export const DOM = {
       }
 
       this.renderProjects();
-      this.hideModal();
+      this.hide(this.MODAL);
+      this.hide(this.OVERLAY);
     })
   },
 
-  generateTaskForm(task) {
-    this.showModal();
+  generateTaskForm(project, task) {
+    this.unhide(this.MODAL);
+    this.unhide(this.OVERLAY);
 
     this.MODAL.innerHTML = ''; 
 
@@ -332,20 +346,25 @@ export const DOM = {
       },
       appendTo: divTaskProject,
     });
-
+    
     let inputTaskProject = createElement('select', {
       id: 'task-project',
-      value: task ? task.project : '',
+      value: task ? task.project.name : '',
       attributes: {
         required: true,
+        disabled: !this.CURRENT_PAGE,
       },
       appendTo: divTaskProject,
     });
 
     Object.values(List.projects).forEach(project => {
+      let isCurrentProject = task && task.project && task.project.uuid === project.uuid;
+      console.log(project.name + ' ' + isCurrentProject);
+      
       createElement('option', {
         value: project.uuid,
         innerText: project.name,
+        selected: isCurrentProject,
         appendTo: inputTaskProject,
       })
     })
@@ -432,7 +451,7 @@ export const DOM = {
     let buttonAdd = createElement('button', {
       id: 'btn-action-task',
       type: 'submit',
-      innerText: 'Add',
+      innerText: task ? 'Save' : 'Add',
       appendTo: divFormBtns,
     });
 
@@ -448,7 +467,7 @@ export const DOM = {
 
       const TASK_NAME = inputTaskName.value;
       const TASK_DESCRIPTION = inputTaskDescription.value;
-      const TASK_PROJECT_UUID = inputTaskProject.value;
+      const TASK_PROJECT = List.projects[inputTaskProject.value];
       const TASK_DUE_DATE = inputTaskDueDate.value;
       const TASK_STATUS = inputTaskStatus.value;
       const TASK_PRIORITY = inputTaskPriority.value;
@@ -456,18 +475,23 @@ export const DOM = {
       if (task) {
         task.name = TASK_NAME;
         task.description = TASK_DESCRIPTION;
-        Project.addTaskToProject(task, findItemWithUuid(TASK_PROJECT_UUID, 'project'))
+        List.addTaskToProject(task, TASK_PROJECT)
         task.dueDate = TASK_DUE_DATE;
         task.status = TASK_STATUS;
         task.priority = TASK_PRIORITY;
         List.saveTask(task);
       } else {
-        const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT_UUID, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
+        const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
+        if (TASK_PROJECT) {
+          TASK_PROJECT.addTask(NEW_TASK);
+        }
         List.saveTask(NEW_TASK);
       }
 
       this.renderTasks();
-      this.hideModal();
+      this.renderProjects();
+      this.hide(this.MODAL);
+      this.hide(this.OVERLAY);
     })
   }
 }
