@@ -2,64 +2,64 @@ import generateUuid from './uuid.js';
 
 export default class Task {
   constructor(name, description, project, dueDate, status, priority) {
-    this._name = name;
-    this._description = description;
-    this._project = project;
-    this._dueDate = dueDate;
-    this._status = status;
-    this._priority = priority;
-    this._uuid = generateUuid();
+    this.name = name;
+    this.description = description;
+    this.project = project;
+    this.dueDate = dueDate;
+    this.status = status;
+    this.priority = priority;
+    this.uuid = generateUuid();
   }
 
-  get name() {
-    return this._name;
+  getName() {
+    return this.name;
   }
 
-  set name(value) {
-    this._name = value;
+  setName(value) {
+    this.name = value;
   }
 
-  get description() {
-    return this._description;
+  getDescription() {
+    return this.description;
   }
   
-  set description(value) {
-    this._description = value;
+  setDescription(value) {
+    this.description = value;
   }
 
-  get project() {
-    return this._project;
+  getProject() {
+    return this.project;
   }
 
-  set project(value) {
-    this._project = value;
+  setProject(value) {
+    this.project = value;
   }
 
-  get dueDate() {
-    return this._dueDate;
+  getDueDate() {
+    return this.dueDate;
   }
 
-  set dueDate(value) {
-    this._dueDate = value;
+  setDueDate(value) {
+    this.dueDate = value;
   }
 
-  get status() {
-    return this._status;
+  getStatus() {
+    return this.status;
   }
 
-  set status(value) {
-    this._status = value;
+  setStatus(value) {
+    this.status = value;
   }
 
-  get priority() {
-    return this._priority;
+  getPriority() {
+    return this.priority;
   }
 
-  set priority(value) {
-    this._priority = value;
+  setPriority(value) {
+    this.priority = value;
   }
 
-  get uuid() {
-    return this._uuid;
+  getUuid() {
+    return this.uuid;
   }
 }

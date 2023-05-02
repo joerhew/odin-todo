@@ -1,8 +1,5 @@
 import { DOM } from './dom.js';
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
+import List from './list.js';
 
 export function createElement(type, options = {}) {
   let element;
@@ -35,11 +32,20 @@ export function findUuidOfHtmlItem(item, itemType) {
   return item.closest('.existing-' + itemType).id;
 }
 
-export function findItemWithUuid(uuid, itemType, storage) {
-  return storage[itemType + 'List'][uuid];
+export function findItemWithUuid(uuid, itemType) {
+  if (itemType === 'task') {
+    return List.tasks[uuid];
+  } else {
+    return List.projects[uuid];
+  }
 }
 
-export function deleteItem(target, itemType, storage) {
-  storage['delete' + capitalizeFirstLetter(itemType)](target);
-  (itemType === 'task') ? DOM.renderTasks() : DOM.renderProjects();
+export function deleteItem(target, itemType) {
+  if (itemType === 'task') {
+    List.deleteTask(target);
+    DOM.renderTasks();
+  } else {
+    List.deleteProject(target);
+    DOM.renderProjects();
+  }
 }

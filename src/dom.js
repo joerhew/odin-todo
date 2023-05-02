@@ -1,6 +1,7 @@
 import Task from './task.js';
 import Project from './project.js';
-import Storage from './storage.js';
+//import Storage from './storage.js';
+import List from './list.js';
 import { createElement, deleteItem, findItemWithUuid, findUuidOfHtmlItem } from './utility.js';
 
 import IconDelete from '../assets/trash-can-outline.svg';
@@ -49,33 +50,33 @@ export const DOM = {
         this.hideModal();
       } else if (targetElement.classList.contains('btn-delete-project')) {
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
-        let projectToDelete = findItemWithUuid(projectUuid, 'project', Storage);
-        deleteItem(projectToDelete, 'project', Storage);
+        let projectToDelete = findItemWithUuid(projectUuid, 'project');
+        deleteItem(projectToDelete, 'project');
       } else if (targetElement.classList.contains('btn-edit-project')) {
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
-        let projectToEdit = findItemWithUuid(projectUuid, 'project', Storage);
+        let projectToEdit = findItemWithUuid(projectUuid, 'project');
         this.generateProjectForm(projectToEdit);
       } else if (targetElement.classList.contains('existing-project-name')) {
         //Click into that project
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
-        let projectClicked = findItemWithUuid(projectUuid, 'project', Storage);
+        let projectClicked = findItemWithUuid(projectUuid, 'project');
         this.updateHeader(projectClicked);
         this.navigateToProject(projectClicked);
-        console.log(`You've clicked on ${projectClicked._name}`);
+        console.log(`You've clicked on ${projectClicked.name}`);
       } else if (targetElement.classList.contains('btn-delete-task')) {
         let taskUuid = findUuidOfHtmlItem(targetElement, 'task');
-        let taskToDelete = findItemWithUuid(taskUuid, 'task', Storage);
-        deleteItem(taskToDelete,'task', Storage);
+        let taskToDelete = findItemWithUuid(taskUuid, 'task');
+        deleteItem(taskToDelete,'task');
       } else if (targetElement.classList.contains('btn-edit-task')) {
         let taskUuid = findUuidOfHtmlItem(targetElement, 'task');
-        let taskToEdit = findItemWithUuid(taskUuid, 'task', Storage);
+        let taskToEdit = findItemWithUuid(taskUuid, 'task');
         this.generateTaskForm(taskToEdit);
       }
     })
   },
 
   navigateToProject(project) {
-    console.log(project._uuid);
+    console.log(project.uuid);
   },
 
   updateHeader(project) {
@@ -84,7 +85,7 @@ export const DOM = {
       appendTo: this.HEADER,
     })
     let headerProject = createElement('h1', {
-      innerText: `  > ${project._name}`,
+      innerText: `  > ${project.name}`,
       appendTo: headerProjectDiv
     })
   },
@@ -92,17 +93,18 @@ export const DOM = {
   renderProjects() {
     this.CURRENT_PROJECTS.innerHTML = '';
 
-    Object.values(Storage.projectList).forEach(project => {
+    Object.values(List.projects).forEach(project => {
+      console.log(project);
       
       const existingProjectDiv = createElement('div', {
         classes: ['existing-project'],
-        id: project._uuid,
+        id: project.uuid,
         appendTo: this.CURRENT_PROJECTS,
       });
       
       const existingProjectName = createElement('div', {
         classes: ['existing-project-name'],
-        innerText: project._name,
+        innerText: project.name,
         appendTo: existingProjectDiv,
       });
       
@@ -123,47 +125,47 @@ export const DOM = {
   renderTasks() {
     this.CURRENT_TASKS.innerHTML = '';
 
-    Object.values(Storage.taskList).forEach(task => {
+    Object.values(List.tasks).forEach(task => {
       
       const existingTaskDiv = createElement('div', {
         classes: ['existing-task'],
-        id: task._uuid,
+        id: task.uuid,
         appendTo: this.CURRENT_TASKS,
       });
       
       const existingTaskName = createElement('div', {
         classes: ['existing-task-name'],
-        innerText: task._name,
+        innerText: task.name,
         appendTo: existingTaskDiv,
       });
 
       const existingTaskDescription = createElement('div', {
         classes: ['existing-task-description'],
-        innerText: task._description,
+        innerText: task.description,
         appendTo: existingTaskDiv,
       });
 
       const existingTaskProject = createElement('div', {
         classes: ['existing-task-project'],
-        innerText: task._project,
+        innerText: task.project,
         appendTo: existingTaskDiv,
       });
 
       const existingTaskDueDate = createElement('div', {
         classes: ['existing-task-due-date'],
-        innerText: task._dueDate,
+        innerText: task.dueDate,
         appendTo: existingTaskDiv,
       });
 
       const existingTaskStatus = createElement('div', {
         classes: ['existing-task-status'],
-        innerText: task._status,
+        innerText: task.status,
         appendTo: existingTaskDiv,
       });
 
       const existingTaskPriority = createElement('div', {
         classes: ['existing-task-priority'],
-        innerText: task._priority,
+        innerText: task.priority,
         appendTo: existingTaskDiv,
       });
       
@@ -219,7 +221,7 @@ export const DOM = {
     let inputProjectName = createElement('input', {
       id: 'project-name',
       type: 'text',
-      value: project ? project._name : '',
+      value: project ? project.name : '',
       attributes: {
         required: true,
       },
@@ -251,11 +253,11 @@ export const DOM = {
       const PROJECT_NAME = inputProjectName.value;
       
       if (project) {
-        project._name = PROJECT_NAME;
-        Storage.saveProject(project);
+        project.name = PROJECT_NAME;
+        List.saveProject(project);
       } else {
         const NEW_PROJECT = new Project(PROJECT_NAME);
-        Storage.saveProject(NEW_PROJECT);
+        List.saveProject(NEW_PROJECT);
       }
 
       this.renderProjects();
@@ -295,7 +297,7 @@ export const DOM = {
       attributes: {
         required: true,
       },
-      value: task ? task._name : '',
+      value: task ? task.name : '',
       appendTo: divTaskName,
     });
 
@@ -314,7 +316,7 @@ export const DOM = {
 
     let inputTaskDescription = createElement('textarea', {
       id: 'task-description',
-      value: task ? task._description : '',
+      value: task ? task.description : '',
       appendTo: divTaskDescription,
     });
 
@@ -333,17 +335,17 @@ export const DOM = {
 
     let inputTaskProject = createElement('select', {
       id: 'task-project',
-      value: task ? task._project : '',
+      value: task ? task.project : '',
       attributes: {
         required: true,
       },
       appendTo: divTaskProject,
     });
 
-    Object.values(Storage.projectList).forEach(project => {
+    Object.values(List.projects).forEach(project => {
       createElement('option', {
-        value: project._uuid,
-        innerText: project._name,
+        value: project.uuid,
+        innerText: project.name,
         appendTo: inputTaskProject,
       })
     })
@@ -364,7 +366,7 @@ export const DOM = {
     let inputTaskDueDate = createElement('input', {
       id: 'task-due-date',
       type: 'date',
-      value: task ? task._dueDate : '',
+      value: task ? task.dueDate : '',
       appendTo: divTaskDueDate,
     });
 
@@ -383,7 +385,7 @@ export const DOM = {
 
     let inputTaskStatus = createElement('select', {
       id: 'task-status',
-      value: task ? task._status : '',
+      value: task ? task.status : '',
       appendTo: divTaskStatus,
     });
 
@@ -410,7 +412,7 @@ export const DOM = {
 
     let inputTaskPriority = createElement('select', {
       id: 'task-priority',
-      value: task ? task._priority : '',
+      value: task ? task.priority : '',
       appendTo: divTaskPriority,
     });
 
@@ -452,16 +454,16 @@ export const DOM = {
       const TASK_PRIORITY = inputTaskPriority.value;
       
       if (task) {
-        task._name = TASK_NAME;
-        task._description = TASK_DESCRIPTION;
-        Project.addTaskToProject(task, findItemWithUuid(TASK_PROJECT_UUID, 'project', Storage))
-        task._dueDate = TASK_DUE_DATE;
-        task._status = TASK_STATUS;
-        task._priority = TASK_PRIORITY;
-        Storage.saveTask(task);
+        task.name = TASK_NAME;
+        task.description = TASK_DESCRIPTION;
+        Project.addTaskToProject(task, findItemWithUuid(TASK_PROJECT_UUID, 'project'))
+        task.dueDate = TASK_DUE_DATE;
+        task.status = TASK_STATUS;
+        task.priority = TASK_PRIORITY;
+        List.saveTask(task);
       } else {
         const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT_UUID, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
-        Storage.saveTask(NEW_TASK);
+        List.saveTask(NEW_TASK);
       }
 
       this.renderTasks();

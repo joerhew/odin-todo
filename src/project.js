@@ -1,42 +1,38 @@
-import Storage from './storage.js';
 import generateUuid from './uuid.js';
+import Task from './task.js'
 
 export default class Project {
   constructor(name) {
-    this._name = name;
-    this._tasks = {};
-    this._uuid = generateUuid();
+    this.name = name;
+    this.tasks = {};
+    this.uuid = generateUuid();
   }
 
-  get name() {
-    return this._name;
+  getName() {
+    return this.name;
   }
 
-  get tasks() {
-    return this._tasks;
+  getUuid() {
+    return this.uuid;
   }
 
-  addTaskToProject(task, project, storage) {
-    let oldProject = task._project;
+  getTasks() {
+    return this.tasks;
+  }
+
+  addTaskToProject(task, project) {
+    let oldProject = task.getProject();
     let newProject = project;
 
     if (oldProject === newProject) {
       return;
     } else if (oldProject !== newProject) {
-      task._project = newProject;
-      console.log(task);
-      Object.assign(project._tasks, task);
-      console.log(project);
-      storage.Storage.updateLocalStorage('taskList');
-      storage.Storage.updateLocalStorage('projectList');
+      task.project = newProject;
+      Object.assign(newProject.tasks, task);
     }
   }
 
   removeTask(task) {
-    delete this._tasks[task.uuid];
-  }
-
-  get uuid() {
-    return this._uuid;
+    delete this.tasks[task.uuid];
   }
 }
