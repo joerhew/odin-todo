@@ -10,7 +10,7 @@ import IconEdit from '../assets/pencil-outline.svg';
 export const DOM = {
   TASK_STATUSES: ['','To do','In progress','Completed'],
   TASK_PRIORITIES: ['','Low','Medium','High'],
-  CURRENT_PAGE: null,
+  SELECTED_PROJECT: null,
   //querySelectors
   CONTENT: document.querySelector('#content'),
   HEADER: document.querySelector('#header'),
@@ -63,7 +63,7 @@ export const DOM = {
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
         let projectClicked = findItemWithUuid(projectUuid, 'project');
         this.updateHeader(projectClicked);
-        this.navigateToProject(projectClicked);
+        this.toggleProject(projectClicked);
         console.log(`You've clicked on ${projectClicked.name}`);
       } else if (targetElement.classList.contains('btn-delete-task')) {
         let taskUuid = findUuidOfHtmlItem(targetElement, 'task');
@@ -77,28 +77,37 @@ export const DOM = {
     })
   },
 
-  navigateToProject(project) {
-    console.log(project.uuid);
-    createElement('button', {
-      class: 'back-button',
-      appendTo: this.HEADER,
-      innerText: 'Back',
-    })
+  toggleProject(project) {
+    let selectedProject = document.querySelector(`#${project.uuid}`)
+    selectedProject.classList.toggle('selected-project')
     this.renderTasks(project);
-    this.hide(this.CNTR_PROJECTS);
-    this.BTN_NEW_TASK.innerText = `Add Task to ${project.name}`;
-    this.CURRENT_PAGE = project.uuid;
+    this.BTN_NEW_TASK.innerText = this.SELECTED_PROJECT ? `Add Task to ${project.name}` : 'Add Task';
+    this.SELECTED_PROJECT = this.SELECTED_PROJECT ? null : project.uuid;
   },
 
   updateHeader(project) {
+    if (this.SELECTED_PROJECT) {
+      let previousProjectContainer = document.querySelector('.nav-block-project');
+      console.log(previousProjectContainer);
+      previousProjectContainer.remove();
+      return;
+    }
     let headerProjectDiv = createElement('div', {
-      class: 'nav-block',
+      classes: ['nav-block-project'],
       appendTo: this.HEADER,
     })
     let headerProject = createElement('h1', {
       innerText: `  > ${project.name}`,
       appendTo: headerProjectDiv
     })
+  },
+
+  updateSelectedProject(projectUUID) {
+    if (projectUUID) {
+      this.SELECTED_PROJECT = projectUUID
+    } else {
+      this.SELECTED_PROJECT = null
+    }
   },
 
   renderProjects() {
@@ -350,9 +359,9 @@ export const DOM = {
     let inputTaskProject = createElement('select', {
       id: 'task-project',
       value: task ? task.project.name : '',
+      disabled: this.SELECTED_PROJECT,
       attributes: {
         required: true,
-        disabled: !this.CURRENT_PAGE,
       },
       appendTo: divTaskProject,
     });

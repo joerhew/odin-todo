@@ -104,6 +104,10 @@ label {
   width: 100%;
 }
 
+.selected-project {
+  border: 5px solid var(--contrast);
+}
+
 .form-row {
   width: 100%;
   margin: 1rem;
