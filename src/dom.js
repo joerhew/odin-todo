@@ -33,6 +33,9 @@ export const DOM = {
   }),
 
   init() {
+    //Create a new project for all unassigned tasks
+    const UNASSIGNED_PROJECT = new Project('Unassigned');
+    List.saveProject(UNASSIGNED_PROJECT);
     //Populate projects & tasks list
     this.renderProjects();
     this.renderTasks();
@@ -155,7 +158,13 @@ export const DOM = {
       
       const existingProjectName = createElement('div', {
         classes: ['existing-project-name'],
-        innerText: `${project.name}, ${Object.keys(project.tasks).length} task(s)`,
+        innerText: project.name,
+        appendTo: existingProjectDiv,
+      });
+
+      const existingProjectNumTasks = createElement('div', {
+        classes: ['existing-project-num-tasks'],
+        innerText: `Tasks: ${Object.keys(project.tasks).length}`,
         appendTo: existingProjectDiv,
       });
       
@@ -214,11 +223,7 @@ export const DOM = {
         appendTo: existingTaskDetails,
       });
 
-      const existingTaskDueDate = createElement('div', {
-        classes: ['existing-task-due-date'],
-        innerText: task.dueDate,
-        appendTo: existingTaskDetails,
-      });
+      
 
       const existingTaskStatus = createElement('div', {
         classes: ['existing-task-status'],

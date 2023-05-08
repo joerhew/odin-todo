@@ -1,7 +1,6 @@
 //import Storage from './storage.js';
 import Project from './project.js';
 import Task from './task.js';
-import _ from 'lodash';
 
 export default class List {
   static projects = {};
