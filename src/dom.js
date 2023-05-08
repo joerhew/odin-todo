@@ -2,7 +2,7 @@ import Task from './task.js';
 import Project from './project.js';
 //import Storage from './storage.js';
 import List from './list.js';
-import { createElement, deleteItem, findItemWithUuid, findUuidOfHtmlItem } from './utility.js';
+import { createElement, deleteItem, findItemWithUuid, findUuidOfHtmlItem, truncateString } from './utility.js';
 
 import IconDelete from '../assets/trash-can-outline.svg';
 import IconEdit from '../assets/pencil-outline.svg';
@@ -15,8 +15,10 @@ export const DOM = {
   CONTENT: document.querySelector('#content'),
   HEADER: document.querySelector('#header'),
   CNTR_PROJECTS: document.querySelector('#cntr-projects'),
+  ADD_PROJECT_DIV: document.querySelector('.div-add-project'),
   CURRENT_PROJECTS: document.querySelector('.current-projects'),
   CNTR_TASKS: document.querySelector('#cntr-tasks'),
+  ADD_TASK_DIV: document.querySelector('.div-add-task'),
   CURRENT_TASKS: document.querySelector('.current-tasks'),
   MODAL: document.querySelector('#modal'),
   OVERLAY: document.querySelector('#overlay'),
@@ -35,8 +37,8 @@ export const DOM = {
     this.renderProjects();
     this.renderTasks();
     //Append buttons
-    this.CNTR_PROJECTS.insertBefore(this.BTN_NEW_PROJECT, this.CURRENT_PROJECTS);
-    this.CNTR_TASKS.insertBefore(this.BTN_NEW_TASK, this.CURRENT_TASKS);
+    this.ADD_PROJECT_DIV.appendChild(this.BTN_NEW_PROJECT);
+    this.ADD_TASK_DIV.appendChild(this.BTN_NEW_TASK);
    //Add a click handler to entire document
     document.getElementById('content').addEventListener('click', (event) => {
       const targetElement = event.target;
@@ -62,8 +64,14 @@ export const DOM = {
         //Click into that project
         let projectUuid = findUuidOfHtmlItem(targetElement, 'project');
         let projectClicked = findItemWithUuid(projectUuid, 'project');
-        this.updateHeader(projectClicked);
-        this.toggleProject(projectClicked);
+        if (this.SELECTED_PROJECT === null) {
+          this.selectProject(projectClicked);
+        } else if (this.SELECTED_PROJECT === projectClicked) {
+          this.unselectProject();
+        } else if (this.SELECTED_PROJECT !== projectClicked) {
+          this.unselectProject();
+          this.selectProject(projectClicked);
+        }
         console.log(`You've clicked on ${projectClicked.name}`);
       } else if (targetElement.classList.contains('btn-delete-task')) {
         let taskUuid = findUuidOfHtmlItem(targetElement, 'task');
@@ -77,36 +85,59 @@ export const DOM = {
     })
   },
 
-  toggleProject(project) {
-    let selectedProject = document.querySelector(`#${project.uuid}`)
-    selectedProject.classList.toggle('selected-project')
+  selectProject(project) {
+    this.SELECTED_PROJECT = project;
+    let selectedProjectContainer = document.querySelector(`#${project.uuid}`);
+    
+    selectedProjectContainer.classList.toggle('selected-project')
+    this.updateHeader(project);
     this.renderTasks(project);
-    this.BTN_NEW_TASK.innerText = this.SELECTED_PROJECT ? `Add Task to ${project.name}` : 'Add Task';
-    this.SELECTED_PROJECT = this.SELECTED_PROJECT ? null : project.uuid;
+    this.updateTaskButton(project);
+  },
+
+  unselectProject() {
+    let previousProjectContainer = document.querySelector(`#${this.SELECTED_PROJECT.uuid}`);
+    this.SELECTED_PROJECT = null;
+
+    previousProjectContainer.classList.toggle('selected-project')
+    this.updateHeader();
+    this.renderTasks();
+    this.updateTaskButton();
+  },
+
+  updateTaskButton(project) {
+    if (project) {
+      this.BTN_NEW_TASK.innerText = `Add Task to ${project.name}`;
+    } else {
+      this.BTN_NEW_TASK.innerText = 'Add Task';
+    }
   },
 
   updateHeader(project) {
-    if (this.SELECTED_PROJECT) {
-      let previousProjectContainer = document.querySelector('.nav-block-project');
-      console.log(previousProjectContainer);
-      previousProjectContainer.remove();
-      return;
-    }
-    let headerProjectDiv = createElement('div', {
-      classes: ['nav-block-project'],
-      appendTo: this.HEADER,
-    })
-    let headerProject = createElement('h1', {
-      innerText: `  > ${project.name}`,
-      appendTo: headerProjectDiv
-    })
-  },
+    if (project) {
+      let previousHeader = document.querySelector('.nav-block');
+      previousHeader.remove();
 
-  updateSelectedProject(projectUUID) {
-    if (projectUUID) {
-      this.SELECTED_PROJECT = projectUUID
+      let headerProjectDiv = createElement('div', {
+        classes: ['nav-block-project'],
+        appendTo: this.HEADER,
+      })
+      createElement('h1', {
+        innerText: `${project.name}`,
+        appendTo: headerProjectDiv
+      })
     } else {
-      this.SELECTED_PROJECT = null
+      let previousProjectContainer = document.querySelector('.nav-block-project');
+      previousProjectContainer.remove();
+
+      let headerDefaultDiv = createElement('div', {
+        classes: ['nav-block'],
+        appendTo: this.HEADER,
+      })
+      createElement('h1', {
+        innerText: 'All Tasks',
+        appendTo: headerDefaultDiv
+      })
     }
   },
 
@@ -124,20 +155,25 @@ export const DOM = {
       
       const existingProjectName = createElement('div', {
         classes: ['existing-project-name'],
-        innerText: `${project.name}, has task(s): ${Object.values(project.tasks).map(task => task.name).join(', ')}`,
+        innerText: `${project.name}, ${Object.keys(project.tasks).length} task(s)`,
         appendTo: existingProjectDiv,
       });
       
+      const existingProjectButtons = createElement('div', {
+        classes: ['existing-project-buttons'],
+        appendTo: existingProjectDiv,
+      });
+
       const editIcon = createElement('Image', {
         classes: ['btn-edit-project','icon'],
         src: IconEdit,
-        appendTo: existingProjectDiv,
+        appendTo: existingProjectButtons,
       });
 
       const deleteIcon = createElement('Image', {
         src: IconDelete,
         classes: ['icon', 'btn-delete-project'],
-        appendTo: existingProjectDiv,
+        appendTo: existingProjectButtons,
       });
     })
   },
@@ -154,53 +190,69 @@ export const DOM = {
         id: task.uuid,
         appendTo: this.CURRENT_TASKS,
       });
+
+      const existingTaskDetails = createElement('div', {
+        classes: ['existing-task-details'],
+        appendTo: existingTaskDiv,
+      })
       
       const existingTaskName = createElement('div', {
         classes: ['existing-task-name'],
         innerText: task.name,
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskDetails,
       });
 
       const existingTaskDescription = createElement('div', {
         classes: ['existing-task-description'],
-        innerText: task.description,
-        appendTo: existingTaskDiv,
+        innerText: truncateString(task.description, 50),
+        appendTo: existingTaskDetails,
       });
 
       const existingTaskProject = createElement('div', {
         classes: ['existing-task-project'],
         innerText: task.project.name,
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskDetails,
       });
 
       const existingTaskDueDate = createElement('div', {
         classes: ['existing-task-due-date'],
         innerText: task.dueDate,
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskDetails,
       });
 
       const existingTaskStatus = createElement('div', {
         classes: ['existing-task-status'],
         innerText: task.status,
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskDetails,
       });
 
-      const existingTaskPriority = createElement('div', {
-        classes: ['existing-task-priority'],
-        innerText: task.priority,
+      switch (task.priority) {
+        case 'Low':
+          existingTaskDiv.classList.add('low-priority');
+          break;
+        case 'Medium':
+          existingTaskDiv.classList.add('medium-priority');
+          break;
+        case 'High':
+          existingTaskDiv.classList.add('high-priority');
+          break;
+      }
+
+      const existingTaskButtons = createElement('div', {
+        classes: ['existing-task-buttons'],
         appendTo: existingTaskDiv,
-      });
+      })
       
       const editIcon = createElement('Image', {
         src: IconEdit,
         classes: ['icon','btn-edit-task'],
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskButtons,
       });
 
       const deleteIcon = createElement('Image', {
         src: IconDelete,
         classes: ['icon','btn-delete-task'],
-        appendTo: existingTaskDiv,
+        appendTo: existingTaskButtons,
       });
     })
   },
@@ -287,7 +339,7 @@ export const DOM = {
     })
   },
 
-  generateTaskForm(project, task) {
+  generateTaskForm(task) {
     this.unhide(this.MODAL);
     this.unhide(this.OVERLAY);
 
@@ -367,13 +419,12 @@ export const DOM = {
     });
 
     Object.values(List.projects).forEach(project => {
-      let isCurrentProject = task && task.project && task.project.uuid === project.uuid;
-      console.log(project.name + ' ' + isCurrentProject);
-      
+      let isSelectedProject = (this.SELECTED_PROJECT && this.SELECTED_PROJECT === project)
+
       createElement('option', {
         value: project.uuid,
         innerText: project.name,
-        selected: isCurrentProject,
+        selected: isSelectedProject,
         appendTo: inputTaskProject,
       })
     })
