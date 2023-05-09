@@ -36,9 +36,9 @@ export function findUuidOfHtmlItem(item, itemType) {
 
 export function findItemWithUuid(uuid, itemType) {
   if (itemType === 'task') {
-    return List.tasks[uuid];
+    return List.findTask(uuid);
   } else {
-    return List.projects[uuid];
+    return List.findProject(uuid);
   }
 }
 
@@ -55,3 +55,15 @@ export function deleteItem(target, itemType) {
 export function truncateString(string, n){
   return (string.length > n) ? string.slice(0, n-1) + '...' : string;
 };
+
+export function findTaskInProjects(taskUuid) {
+  for (const project of Object.values(List.getProjects())) {
+    const tasks = Object.values(project.tasks);
+    for (const task of tasks) {
+      if (task.uuid === taskUuid) {
+        return project;
+      }
+    }
+  }
+  return null;
+}

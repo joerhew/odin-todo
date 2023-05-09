@@ -1,10 +1,9 @@
 import generateUuid from './uuid.js';
 
 export default class Task {
-  constructor(name, description, project, dueDate, status, priority) {
+  constructor(name, description, dueDate, status, priority) {
     this.name = name;
     this.description = description;
-    this.project = project;
     this.dueDate = dueDate;
     this.status = status;
     this.priority = priority;

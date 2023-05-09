@@ -2,7 +2,7 @@ import Task from './task.js';
 import Project from './project.js';
 //import Storage from './storage.js';
 import List from './list.js';
-import { createElement, deleteItem, findItemWithUuid, findUuidOfHtmlItem, truncateString } from './utility.js';
+import { createElement, deleteItem, findItemWithUuid, findUuidOfHtmlItem, truncateString, findTaskInProjects } from './utility.js';
 
 import IconDelete from '../assets/trash-can-outline.svg';
 import IconEdit from '../assets/pencil-outline.svg';
@@ -33,6 +33,18 @@ export const DOM = {
   }),
 
   init() {
+    function removeDuplicateUnassignedProjects() {
+      const projects = List.getProjects();
+      const unassignedProjects = Object.values(projects).filter(project => project.name === 'Unassigned');
+      if (unassignedProjects.length > 1) {
+        unassignedProjects.slice(1).forEach(project => {
+          List.deleteProject(project);
+          this.renderProjects();
+        });
+      }
+    }
+    
+    removeDuplicateUnassignedProjects();
     //Create a new project for all unassigned tasks
     const UNASSIGNED_PROJECT = new Project('Unassigned');
     List.saveProject(UNASSIGNED_PROJECT);
@@ -69,9 +81,9 @@ export const DOM = {
         let projectClicked = findItemWithUuid(projectUuid, 'project');
         if (this.SELECTED_PROJECT === null) {
           this.selectProject(projectClicked);
-        } else if (this.SELECTED_PROJECT === projectClicked) {
+        } else if (this.SELECTED_PROJECT.uuid === projectClicked.uuid) {
           this.unselectProject();
-        } else if (this.SELECTED_PROJECT !== projectClicked) {
+        } else if (this.SELECTED_PROJECT.uuid !== projectClicked.uuid) {
           this.unselectProject();
           this.selectProject(projectClicked);
         }
@@ -147,9 +159,7 @@ export const DOM = {
   renderProjects() {
     this.CURRENT_PROJECTS.innerHTML = '';
 
-    Object.values(List.projects).forEach(project => {
-      console.log(project);
-      
+    Object.values(List.getProjects()).forEach(project => {
       const existingProjectDiv = createElement('div', {
         classes: ['existing-project'],
         id: project.uuid,
@@ -189,8 +199,8 @@ export const DOM = {
 
   renderTasks(project) {
     this.CURRENT_TASKS.innerHTML = '';
-
-    let tasksToBeRendered = project ? project.tasks : List.tasks;
+    List.getTasks();
+    let tasksToBeRendered = project ? project.tasks : List.getTasks();
     
     Object.values(tasksToBeRendered).forEach(task => {
       
@@ -219,7 +229,7 @@ export const DOM = {
 
       const existingTaskProject = createElement('div', {
         classes: ['existing-task-project'],
-        innerText: task.project.name,
+        innerText: 'A placeholder for task-project name',
         appendTo: existingTaskDetails,
       });
 
@@ -415,7 +425,7 @@ export const DOM = {
     
     let inputTaskProject = createElement('select', {
       id: 'task-project',
-      value: task ? task.project.name : '',
+      value: task ? 'A task-project name placeholder' : '',
       disabled: this.SELECTED_PROJECT,
       attributes: {
         required: true,
@@ -423,13 +433,19 @@ export const DOM = {
       appendTo: divTaskProject,
     });
 
-    Object.values(List.projects).forEach(project => {
-      let isSelectedProject = (this.SELECTED_PROJECT && this.SELECTED_PROJECT === project)
+    Object.values(List.getProjects()).forEach(project => {
+      let taskProjectUuid;
+      if (task) {
+      let taskProject = findTaskInProjects(task.uuid);
+      if (taskProject) {
+        taskProjectUuid = taskProject.uuid;
+      }
+  }
 
       createElement('option', {
         value: project.uuid,
         innerText: project.name,
-        selected: isSelectedProject,
+        selected: project.uuid === taskProjectUuid,
         appendTo: inputTaskProject,
       })
     })
@@ -532,7 +548,7 @@ export const DOM = {
 
       const TASK_NAME = inputTaskName.value;
       const TASK_DESCRIPTION = inputTaskDescription.value;
-      const TASK_PROJECT = List.projects[inputTaskProject.value];
+      const TASK_PROJECT = List.findProject(inputTaskProject.value);
       const TASK_DUE_DATE = inputTaskDueDate.value;
       const TASK_STATUS = inputTaskStatus.value;
       const TASK_PRIORITY = inputTaskPriority.value;
@@ -546,11 +562,10 @@ export const DOM = {
         task.priority = TASK_PRIORITY;
         List.saveTask(task);
       } else {
-        const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_PROJECT, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
-        if (TASK_PROJECT) {
-          TASK_PROJECT.addTask(NEW_TASK);
-        }
+        const NEW_TASK = new Task(TASK_NAME, TASK_DESCRIPTION, TASK_DUE_DATE, TASK_STATUS, TASK_PRIORITY);
+        
         List.saveTask(NEW_TASK);
+        List.addTaskToProject(NEW_TASK, TASK_PROJECT)
       }
 
       this.renderTasks();
