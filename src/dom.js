@@ -35,19 +35,26 @@ export const DOM = {
   init() {
     function removeDuplicateUnassignedProjects() {
       const projects = List.getProjects();
-      const unassignedProjects = Object.values(projects).filter(project => project.name === 'Unassigned');
+      console.log(projects)
+      const unassignedProjects = Object.values(projects).filter(project => {
+        console.log(project.name); // add this line
+        return project.name === 'Unassigned';
+      });
+      console.log(unassignedProjects);
       if (unassignedProjects.length > 1) {
         unassignedProjects.slice(1).forEach(project => {
           List.deleteProject(project);
           this.renderProjects();
         });
+      } else if (unassignedProjects.length === 0) {
+        //Create a new project for all unassigned tasks
+        const UNASSIGNED_PROJECT = new Project('Unassigned');
+        List.saveProject(UNASSIGNED_PROJECT);
       }
     }
     
     removeDuplicateUnassignedProjects();
-    //Create a new project for all unassigned tasks
-    const UNASSIGNED_PROJECT = new Project('Unassigned');
-    List.saveProject(UNASSIGNED_PROJECT);
+
     //Populate projects & tasks list
     this.renderProjects();
     this.renderTasks();
@@ -199,10 +206,17 @@ export const DOM = {
 
   renderTasks(project) {
     this.CURRENT_TASKS.innerHTML = '';
-    List.getTasks();
+    console.log(List.getTasks());
     let tasksToBeRendered = project ? project.tasks : List.getTasks();
+
     
     Object.values(tasksToBeRendered).forEach(task => {
+
+      const projects = Object.values(List.getProjects());
+      // Find the project where the project's tasks object has a key matching the task's UUID
+      const existingTaskProjectObj = projects.find(project => Object.keys(project.tasks).includes(task.uuid));
+      // If we found such a project, use its name as the innerText, otherwise use an empty string
+      const existingTaskProjectName = existingTaskProjectObj ? existingTaskProjectObj.name : '';
       
       const existingTaskDiv = createElement('div', {
         classes: ['existing-task'],
@@ -229,11 +243,9 @@ export const DOM = {
 
       const existingTaskProject = createElement('div', {
         classes: ['existing-task-project'],
-        innerText: 'A placeholder for task-project name',
+        innerText: existingTaskProjectName,
         appendTo: existingTaskDetails,
       });
-
-      
 
       const existingTaskStatus = createElement('div', {
         classes: ['existing-task-status'],

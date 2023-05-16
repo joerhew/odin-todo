@@ -20,15 +20,21 @@ export default class List {
 
   static getTasks() {
     let storageTasks = Storage.getTasks();
-    Object.values(storageTasks).forEach(task => {
-      let newTask = Object.assign(new Task(), task);
-      List.saveTask(newTask);
-    })
+    let numStorageTasks = Object.keys(storageTasks).length;
+    if (numStorageTasks > 0) {
+      Object.values(storageTasks).forEach(task => {
+        let newTask = Object.assign(new Task(), task);
+        List.saveTask(newTask);
+      })
+    } else if (numStorageTasks === 0) {
+      this.tasks = {};
+    }
     return this.tasks;
   }
 
   static getProjects() {
     let storageProjects = Storage.getProjects();
+    let numStorageProjects = Object.keys(storageProjects).length;
     Object.values(storageProjects).forEach(project => {
       let newProject = Object.assign(new Project(), project);
       List.saveProject(newProject);
@@ -80,9 +86,11 @@ export default class List {
 
   static deleteProject(project) {
     Storage.deleteProject(project);
+    delete this.projects[project.uuid];
   }
 
   static deleteTask(task) {
-    delete this.tasks[task.uuid]
+    Storage.deleteTask(task);
+    delete this.tasks[task.uuid];
   }
 }
